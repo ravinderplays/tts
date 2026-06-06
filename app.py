@@ -18,7 +18,7 @@ HTML = """
   </style>
 </head>
 <body>
-  <h2>🔊 Punjabi Text to Speech</h2>
+  <h2>🔊 Punjabi Text to Speech...</h2>
   <form method="POST" action="/tts">
     <textarea name="text" placeholder="ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?">{{ text }}</textarea>
     <br>
