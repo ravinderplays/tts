@@ -306,6 +306,12 @@ function selectVoice(id, el) {
   currentVoice = id;
   document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+
+  // Hide pitch slider for gTTS voices (no Neural in id)
+  const isEdge = id.includes('Neural');
+  document.getElementById('pitchSlider').closest('.grid-2').querySelector('[id*="pitch"]')
+    .parentElement.style.opacity = isEdge ? '1' : '0.4';
+  document.getElementById('pitchSlider').disabled = !isEdge;
 }
 
 // ── Render sample buttons ─────────────────────────────────────

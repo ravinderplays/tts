@@ -7,9 +7,14 @@ VOICES = {
         {"id": "pa|co.in|true",  "name": "Punjabi Slow",   "gender": "neutral"},
     ],
     "en": [
-        {"id": "en-IN-PrabhatNeural",  "name": "Prabhat (Male)",    "gender": "male"},
-        {"id": "en-IN-NeerjaNeural",   "name": "Neerja (Female)",   "gender": "female"},
-        {"id": "en-IN-NeerjaExpressiveNeural", "name": "Neerja Expressive", "gender": "female"},
+        {"id": "en-IN-PrabhatNeural",          "name": "Prabhat Indian (Male)",    "gender": "male"},
+        {"id": "en-IN-NeerjaNeural",           "name": "Neerja Indian (Female)",   "gender": "female"},
+        {"id": "en-IN-NeerjaExpressiveNeural", "name": "Neerja Expressive (Female)","gender": "female"},
+        {"id": "en-US-GuyNeural",              "name": "Guy US (Male)",            "gender": "male"},
+        {"id": "en-US-JennyNeural",            "name": "Jenny US (Female)",        "gender": "female"},  # ✅ added
+        {"id": "en-US-AriaNeural",             "name": "Aria US (Female)",         "gender": "female"},
+        {"id": "en-GB-RyanNeural",             "name": "Ryan UK (Male)",           "gender": "male"},
+        {"id": "en-GB-SoniaNeural",            "name": "Sonia UK (Female)",        "gender": "female"},
     ],
     "hi": [
         {"id": "hi-IN-MadhurNeural",   "name": "Madhur (Male)",     "gender": "male"},
