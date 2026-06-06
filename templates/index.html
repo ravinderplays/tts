@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; color: #1a1a1a; }
+
+    /* ── Header ── */
+    .header { background: #1D9E75; padding: 1.5rem 2rem; color: white; display: flex; align-items: center; gap: 14px; }
+    .header i  { font-size: 28px; }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header p  { font-size: 14px; opacity: 0.85; margin-top: 2px; }
+
+    /* ── Layout ── */
+    .container { max-width: 680px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 1rem; }
+
+    /* ── Form elements ── */
+    label { font-size: 13px; color: #555; display: block; margin-bottom: 6px; }
+    textarea {
+      width: 100%; font-size: 15px; padding: 12px;
+      border-radius: 8px; border: 1px solid #ddd;
+      resize: vertical; min-height: 130px;
+      background: #fafafa; color: #1a1a1a; line-height: 1.7;
+    }
+    textarea:focus { outline: none; border-color: #1D9E75; }
+    .char-count { font-size: 12px; color: #999; text-align: right; margin-top: 4px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+
+    /* ── Language tabs ── */
+    .lang-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .lang-tab {
+      padding: 7px 16px; border-radius: 20px; font-size: 13px;
+      cursor: pointer; border: 1px solid #ddd;
+      background: white; color: #555; font-weight: 500;
+    }
+    .lang-tab.active            { background: #1D9E75; color: white; border-color: #1D9E75; }
+    .lang-tab:hover:not(.active){ background: #f0fdf4; border-color: #5DCAA5; color: #0F6E56; }
+
+    /* ── Voice cards ── */
+    .voice-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; margin-top: 10px; }
+    .voice-card {
+      border: 1.5px solid #ddd; border-radius: 10px;
+      padding: 12px; cursor: pointer; text-align: center;
+      background: white; transition: all 0.15s;
+    }
+    .voice-card:hover           { border-color: #1D9E75; background: #f0fdf4; }
+    .voice-card.selected        { border-color: #1D9E75; background: #E1F5EE; }
+    .voice-card .icon           { font-size: 22px; margin-bottom: 6px; }
+    .voice-card .vname          { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+    .voice-card .gender-label   { font-size: 11px; color: #888; margin-top: 2px; }
+    .voice-card.male   .icon    { color: #3b82f6; }
+    .voice-card.female .icon    { color: #ec4899; }
+
+    /* ── Sliders ── */
+    input[type=range] { width: 100%; accent-color: #1D9E75; margin-top: 6px; }
+    .slider-row { display: flex; align-items: center; gap: 10px; }
+    .slider-val { font-size: 13px; font-weight: 600; color: #1D9E75; min-width: 42px; text-align: right; }
+
+    /* ── Samples ── */
+    .samples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .sample-btn {
+      font-size: 12px; padding: 5px 14px; cursor: pointer;
+      border-radius: 20px; background: #E1F5EE;
+      color: #0F6E56; border: 1px solid #5DCAA5;
+    }
+    .sample-btn:hover { background: #9FE1CB; }
+
+    /* ── Generate button ── */
+    .generate-btn {
+      width: 100%; padding: 14px; font-size: 15px; font-weight: 600;
+      cursor: pointer; border-radius: 10px;
+      background: #1D9E75; color: white; border: none; margin-bottom: 1rem;
+    }
+    .generate-btn:hover    { background: #0F6E56; }
+    .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Audio result ── */
+    .audio-card { background: #E1F5EE; border: 1px solid #5DCAA5; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+    .audio-title { font-size: 13px; color: #0F6E56; font-weight: 600; margin-bottom: 10px; }
+    audio { width: 100%; margin-bottom: 12px; }
+    .dl-btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 11px; font-size: 14px; font-weight: 600;
+      border: 1px solid #5DCAA5; border-radius: 8px;
+      text-decoration: none; color: #0F6E56; background: white;
+    }
+    .dl-btn:hover { background: #E1F5EE; }
+
+    /* ── Error ── */
+    .error {
+      background: #fff5f5; border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 14px; color: #dc2626; margin-bottom: 1rem;
+    }
+
+    /* ── Misc ── */
+    .section-title { font-size: 13px; color: #555; font-weight: 600; margin-bottom: 8px; }
+    .lang-badge {
+      display: inline-block; font-size: 11px; padding: 3px 10px;
+      border-radius: 12px; background: #E1F5EE;
+      color: #0F6E56; border: 1px solid #5DCAA5;
+      margin-left: 8px; vertical-align: middle;
+    }
+    .footer { text-align: center; font-size: 12px; color: #999; padding-top: 1rem; border-top: 1px solid #eee; margin-top: 1rem; }
+
+    /* ── Loader overlay ── */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.overlay.show { display: flex; }
+.spinner-box {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.spinner-box i   { font-size: 38px; color: #1D9E75; margin-bottom: 12px; display: block; }
+.spinner-box p   { font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0; }
+.spinner-box small { font-size: 12px; color: #888; margin-top: 6px; display: block; }
+  </style>
+</head>
+<body>
+
+    <!-- Loading overlay -->
+    <div class="overlay" id="loadingOverlay">
+    <div class="spinner-box">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Generating audio...</p>
+        <small>Please wait a moment</small>
+    </div>
+    </div>
+
+<!-- Header -->
+<div class="header">
+  <i class="fa-solid fa-volume-high"></i>
+  <div>
+    <h1>Text to Speech</h1>
+    <p>Natural voices · Male &amp; Female · Multiple languages</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+
+    <!-- Language tabs -->
+    <label style="margin-bottom:10px;">
+      <i class="fa-solid fa-language" style="margin-right:5px;"></i>Select language
+    </label>
+    <div class="lang-tabs" id="langTabs">
+      <button class="lang-tab" onclick="setLang('pa', this)" data-lang="pa">ਪੰਜਾਬੀ Punjabi</button>
+      <button class="lang-tab" onclick="setLang('en', this)" data-lang="en">English</button>
+      <button class="lang-tab" onclick="setLang('hi', this)" data-lang="hi">हिन्दी Hindi</button>
+      <!-- <button class="lang-tab" onclick="setLang('ur', this)" data-lang="ur">اردو Urdu</button>
+      <button class="lang-tab" onclick="setLang('gu', this)" data-lang="gu">ગુજરાતી</button>
+      <button class="lang-tab" onclick="setLang('ta', this)" data-lang="ta">தமிழ் Tamil</button> -->
+    </div>
+
+    <!-- Voice cards -->
+    <div style="margin-bottom:14px;">
+      <p class="section-title">
+        <i class="fa-solid fa-microphone" style="margin-right:5px;"></i>Select voice
+      </p>
+      <div class="voice-cards" id="voiceCards"></div>
+    </div>
+
+    <!-- Text input -->
+    <label>
+      <i class="fa-solid fa-pen-to-square" style="margin-right:5px;"></i>Enter text
+      <span class="lang-badge" id="langBadge">Punjabi</span>
+    </label>
+    <textarea id="inputText" oninput="updateCount()">{{ text }}</textarea>
+    <div class="char-count"><span id="charCount">{{ text|length }}</span> characters</div>
+
+    <!-- Speed & Pitch sliders -->
+    <div class="grid-2" style="margin-top:16px;">
+      <div>
+        <label>
+          <i class="fa-solid fa-gauge" style="margin-right:4px;"></i>Speed
+          <span class="slider-val" id="rateVal">0%</span>
+        </label>
+        <div class="slider-row">
+          <span style="font-size:11px;color:#999;">Slow</span>
+          <input type="range" id="rateSlider" min="-50" max="50" step="5" value="0"
+            oninput="document.getElementById('rateVal').textContent = this.value + '%'">
+          <span style="font-size:11px;color:#999;">Fast</span>
+        </div>
+      </div>
+      <div>
+        <label>
+          <i class="fa-solid fa-music" style="margin-right:4px;"></i>Pitch
+          <span class="slider-val" id="pitchVal">0Hz</span>
+        </label>
+        <div class="slider-row">
+          <span style="font-size:11px;color:#999;">Low</span>
+          <input type="range" id="pitchSlider" min="-20" max="20" step="5" value="0"
+            oninput="document.getElementById('pitchVal').textContent = this.value + 'Hz'">
+          <span style="font-size:11px;color:#999;">High</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick samples -->
+    <div style="margin-top:14px;">
+      <label>Quick samples</label>
+      <div class="samples" id="samplesBox"></div>
+    </div>
+
+  </div><!-- /.card -->
+
+  <!-- Generate button -->
+    <button class="generate-btn" id="generateBtn" onclick="submitForm()">
+        <span id="btnContent">
+            <i class="fa-solid fa-play" style="margin-right:8px;"></i>Generate speech
+        </span>
+        <span id="btnLoader" style="display:none;">
+            <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Generating audio...
+        </span>
+    </button>
+
+  <!-- Audio result -->
+  {% if audio %}
+  <div class="audio-card">
+    <p class="audio-title">
+      <i class="fa-solid fa-circle-check" style="margin-right:5px;"></i>
+      {{ voice_name }} &nbsp;|&nbsp; {{ lang_name }}
+    </p>
+    <audio controls src="/audio" autoplay></audio>
+    <a href="/audio" download="speech.mp3" class="dl-btn">
+      <i class="fa-solid fa-download"></i> Download MP3
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Error -->
+  {% if error %}
+  <div class="error">
+    <i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  <!-- <div class="footer">
+    Powered by Microsoft Edge TTS &nbsp;&middot;&nbsp; Natural Neural Voices
+  </div> -->
+</div>
+
+<script>
+// ── Language metadata ──────────────────────────────────────────
+const langData = {
+  pa: { badge: 'Punjabi (pa)',   placeholder: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?',           samples: ['ਸਤ ਸ੍ਰੀ ਅਕਾਲ', 'ਪੰਜਾਬ ਦੀ ਧਰਤੀ ਬਹੁਤ ਸੁੰਦਰ ਹੈ', 'ਤੁਹਾਡਾ ਨਾਮ ਕੀ ਹੈ?', 'ਵਾਹਿਗੁਰੂ ਜੀ ਕਾ ਖਾਲਸਾ'] },
+  en: { badge: 'English (en)',   placeholder: 'Hello! How are you today?',                 samples: ['Hello, how are you?', 'Good morning everyone', 'Welcome to our app', 'Have a nice day!'] },
+  hi: { badge: 'Hindi (hi)',     placeholder: 'नमस्ते, आप कैसे हैं?',                     samples: ['नमस्ते', 'आप कैसे हैं?', 'भारत महान है', 'धन्यवाद'] },
+  ur: { badge: 'Urdu (ur)',      placeholder: 'آپ کیسے ہیں؟',                              samples: ['السلام علیکم', 'آپ کیسے ہیں؟', 'شکریہ', 'خوش آمدید'] },
+  gu: { badge: 'Gujarati (gu)',  placeholder: 'નમસ્તે, તમે કેમ છો?',                      samples: ['નમસ્તે', 'તમે કેમ છો?', 'ગુજરાત', 'આભાર'] },
+  ta: { badge: 'Tamil (ta)',     placeholder: 'வணக்கம், நீங்கள் எப்படி இருக்கிறீர்கள்?',  samples: ['வணக்கம்', 'நன்றி', 'தமிழ்நாடு', 'எப்படி இருக்கிறீர்கள்?'] }
+};
+
+// ── Voice data from Flask ──────────────────────────────────────
+const voiceData = {{ voices_json|safe }};
+let currentLang  = '{{ lang }}'  || 'pa';
+let currentVoice = '{{ voice }}' || '';
+
+// ── Set language tab ──────────────────────────────────────────
+function setLang(lang, el) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('langBadge').textContent      = langData[lang].badge;
+  document.getElementById('inputText').placeholder      = langData[lang].placeholder;
+  renderVoices(lang);
+  renderSamples(lang);
+}
+
+// ── Render voice cards ────────────────────────────────────────
+function renderVoices(lang) {
+  const voices = voiceData[lang] || [];
+  document.getElementById('voiceCards').innerHTML = voices.map((v, i) => {
+    const isSelected = currentVoice === v.id || (i === 0 && !currentVoice);
+    if (isSelected) currentVoice = v.id;
+    const icon = v.gender === 'male' ? 'fa-person' : 'fa-person-dress';
+    return `
+      <div class="voice-card ${v.gender} ${isSelected ? 'selected' : ''}"
+           onclick="selectVoice('${v.id}', this)">
+        <div class="icon"><i class="fa-solid ${icon}"></i></div>
+        <div class="vname">${v.name}</div>
+        <div class="gender-label">${v.gender.charAt(0).toUpperCase() + v.gender.slice(1)}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Select voice card ─────────────────────────────────────────
+function selectVoice(id, el) {
+  currentVoice = id;
+  document.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── Render sample buttons ─────────────────────────────────────
+function renderSamples(lang) {
+  document.getElementById('samplesBox').innerHTML =
+    langData[lang].samples
+      .map(s => `<button class="sample-btn" onclick="setSample('${s}')">${s}</button>`)
+      .join('');
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function updateCount() {
+  document.getElementById('charCount').textContent =
+    document.getElementById('inputText').value.length;
+}
+
+function setSample(text) {
+  document.getElementById('inputText').value = text;
+  updateCount();
+}
+
+// ── Submit form ───────────────────────────────────────────────
+function submitForm() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { alert('Please enter some text first.'); return; }
+
+  // ── Show loader ──
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('btnContent').style.display = 'none';
+  document.getElementById('btnLoader').style.display  = 'inline';
+  document.getElementById('generateBtn').disabled     = true;
+
+  const rate  = document.getElementById('rateSlider').value;
+  const pitch = document.getElementById('pitchSlider').value;
+  const form  = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/tts';
+  [['text', text], ['lang', currentLang], ['voice', currentVoice],
+   ['rate', rate],  ['pitch', pitch]].forEach(([k, v]) => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = k; inp.value = v;
+    form.appendChild(inp);
+  });
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// ── Restore state on page load ────────────────────────────────
+(function init() {
+  const lang  = currentLang  || 'pa';
+  const tabEl = document.querySelector(`.lang-tab[data-lang="${lang}"]`);
+  setLang(lang, tabEl);
+  const rate  = '{{ rate }}'  || '0';
+  const pitch = '{{ pitch }}' || '0';
+  document.getElementById('rateSlider').value           = rate;
+  document.getElementById('pitchSlider').value          = pitch;
+  document.getElementById('rateVal').textContent        = rate  + '%';
+  document.getElementById('pitchVal').textContent       = pitch + 'Hz';
+  updateCount();
+})();
+</script>
+
+</body>
+</html>
