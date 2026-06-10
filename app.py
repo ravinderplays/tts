@@ -1,7 +1,7 @@
 import os
 import json
 import asyncio
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template, redirect, url_for
 import edge_tts
 from gtts import gTTS
 from voices import VOICES
@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 def is_edge_voice(voice_id: str) -> bool:
     """Edge TTS voices contain 'Neural', gTTS voices use 'lang|tld|slow' format"""
+    app.logger.info("Request received")
     return "Neural" in voice_id
 
 
@@ -58,8 +59,11 @@ def home():
     )
 
 
-@app.route("/tts", methods=["POST"])
+@app.route("/tts", methods=["GET","POST"])
 def tts():
+    if request.method == "GET":
+        return redirect(url_for("home"))
+
     text  = request.form.get("text",  "").strip()
     lang  = request.form.get("lang",  "pa")
     voice = request.form.get("voice", "pa|co.in|false")
